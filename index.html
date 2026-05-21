@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golf Tournament</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Lato:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1a11; --surface: #172418; --surface2: #1f3023;
+  --border: rgba(255,255,255,0.14); --gold: #d4a843; --green-acc: #4caf76;
+  --white: #ffffff; --muted: #c8deca; --red: #e07055;
+  --text: #eef4ef; --label: #c0d4c2;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body { font-family:'Lato',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-weight:400; }
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* ── SHARED ── */
+.page-wrap { min-height:100vh; padding:0 0 3rem; }
+.page-header { background:var(--surface); border-bottom:1px solid rgba(255,255,255,0.12); padding:0.85rem 1rem; display:flex; align-items:center; gap:0.75rem; position:sticky; top:0; z-index:50; }
+.page-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:0.08em; color:var(--gold); flex:1; }
+.page-body { padding:1rem; max-width:520px; margin:0 auto; }
+.card { background:var(--surface); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:1.5rem; margin-bottom:0.75rem; }
+.card-title { font-family:'Barlow Condensed',sans-serif; font-size:0.75rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; }
+.field { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.75rem; }
+label { font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--label); font-weight:400; }
+input, select { background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); border-radius:8px; padding:0.7rem 0.85rem; color:var(--white); font-family:'Lato',sans-serif; font-size:1rem; font-weight:400; outline:none; transition:border-color 0.2s; width:100%; -webkit-appearance:none; }
+input:focus, select:focus { border-color:var(--gold); background:rgba(255,255,255,0.1); }
+input::placeholder { color:rgba(255,255,255,0.3); }
+select option { background:#1a2a1f; color:var(--white); }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:0.65rem; margin-bottom:0.65rem; }
+.btn-primary { width:100%; padding:1rem; background:var(--gold); color:#0e1a13; border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:0.2em; cursor:pointer; transition:opacity 0.15s,transform 0.1s; margin-top:0.5rem; }
+.btn-primary:active { transform:scale(0.98); opacity:0.85; }
+.btn-primary:disabled { opacity:0.4; cursor:default; pointer-events:none; }
+.btn-secondary { width:100%; padding:0.75rem; background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.2); border-radius:10px; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.15em; cursor:pointer; margin-top:0.4rem; transition:border-color 0.2s,color 0.2s; }
+.btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
+.btn-ghost { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:var(--text); padding:0.4rem 0.85rem; border-radius:6px; font-size:0.75rem; letter-spacing:0.08em; cursor:pointer; font-family:'Lato',sans-serif; white-space:nowrap; }
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+.hint { font-size:0.72rem; color:var(--muted); margin-top:0.4rem; line-height:1.6; }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+.player-block { display:grid; grid-template-columns:2fr 1fr; gap:0.5rem; align-items:end; margin-bottom:0.5rem; }
+.badge { display:inline-block; font-size:0.6rem; font-weight:700; padding:2px 7px; border-radius:4px; letter-spacing:0.05em; vertical-align:middle; }
+.badge-gold { background:var(--gold); color:#0e1a13; }
+.badge-green { background:var(--green-acc); color:#0a160e; }
+
+/* ── HOME ── */
+#home { min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1rem 3rem;
+  background:radial-gradient(ellipse at 20% 0%,rgba(76,175,118,0.12) 0%,transparent 55%), radial-gradient(ellipse at 80% 100%,rgba(212,168,67,0.08) 0%,transparent 50%),var(--bg); }
+.brand { text-align:center; margin-bottom:2rem; }
+.brand-icon { font-size:clamp(3rem,12vw,5rem); line-height:1; }
+.brand-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:clamp(2rem,9vw,4rem); letter-spacing:0.06em; color:var(--gold); text-shadow:0 0 80px rgba(212,168,67,0.25); }
+.brand-tag { font-size:0.72rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted); margin-top:0.5rem; }
+.home-card { width:100%; max-width:440px; background:var(--surface); border:1.5px solid rgba(255,255,255,0.14); border-radius:14px; padding:1.25rem 1.5rem; margin-bottom:0.75rem; cursor:pointer; transition:border-color 0.15s,background 0.15s; display:flex; align-items:center; gap:1rem; }
+.home-card:hover { border-color:rgba(212,168,67,0.5); background:rgba(212,168,67,0.04); }
+.home-card-icon { font-size:1.8rem; flex-shrink:0; }
+.home-card-title { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:700; letter-spacing:0.06em; color:var(--white); margin-bottom:3px; }
+.home-card-desc { font-size:0.72rem; color:var(--muted); }
+.home-divider { width:100%; max-width:440px; text-align:center; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin:0.5rem 0; }
+
+/* ── TOURNAMENT LOBBY ── */
+.t-header-bar { background:var(--surface2); border:1.5px solid rgba(212,168,67,0.5); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; }
+.t-name { font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:700; color:var(--gold); letter-spacing:0.06em; }
+.t-meta { font-size:0.72rem; color:var(--muted); margin-top:3px; }
+.round-card { background:var(--surface); border:1.5px solid rgba(255,255,255,0.14); border-radius:12px; padding:1rem 1.25rem; margin-bottom:0.6rem; cursor:pointer; transition:border-color 0.15s; display:flex; align-items:center; gap:0.75rem; }
+.round-card:hover { border-color:rgba(212,168,67,0.5); }
+.round-card.active-round { border-color:var(--green-acc); background:var(--surface2); }
+.round-card.complete-round { border-color:rgba(212,168,67,0.4); background:var(--surface2); }
+.rc-num { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:700; color:rgba(255,255,255,0.25); min-width:2.5rem; text-align:center; }
+.rc-body { flex:1; }
+.rc-title { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:600; letter-spacing:0.04em; color:var(--text); }
+.rc-sub { font-size:0.7rem; color:var(--muted); margin-top:3px; }
+.rc-status { font-size:0.62rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:3px 9px; border-radius:10px; }
+.rc-status.upcoming { background:rgba(255,255,255,0.1); color:var(--muted); }
+.rc-status.in-progress { background:rgba(76,175,118,0.25); color:#7dd9a0; }
+.rc-status.complete { background:rgba(212,168,67,0.2); color:var(--gold); }
+
+/* Leaderboard */
+.lb-row { display:flex; align-items:center; gap:0.75rem; padding:0.85rem 1rem; border-radius:10px; margin-bottom:0.4rem; border:1.5px solid rgba(255,255,255,0.12); background:var(--surface); }
+.lb-row.lb-1st { border-color:rgba(212,168,67,0.5); background:var(--surface2); }
+.lb-pos { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:700; color:rgba(255,255,255,0.25); min-width:2rem; text-align:center; }
+.lb-1st .lb-pos { color:var(--gold); }
+.lb-info { flex:1; }
+.lb-name { font-size:1rem; font-weight:400; margin-bottom:2px; color:var(--text); }
+.lb-hcp { font-size:0.65rem; color:var(--muted); }
+.lb-pts { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:700; color:var(--white); }
+.lb-pts-label { font-size:0.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+
+/* ── MODAL ── */
+.modal-overlay { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--surface); border:1.5px solid rgba(212,168,67,0.35); border-radius:18px; padding:1.5rem; width:100%; max-width:400px; max-height:92vh; overflow-y:auto; }
+.modal-title { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:700; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.25rem; }
+.modal-sub { font-size:0.72rem; color:var(--muted); letter-spacing:0.05em; margin-bottom:1.25rem; line-height:1.5; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.btn-close { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text); font-size:1rem; cursor:pointer; line-height:1; padding:5px 8px; border-radius:6px; }
+
+/* ── COURSE WIZARD ── */
+.si-btn { border-radius:8px; padding:0.6rem 0; text-align:center; font-family:'Barlow Condensed',sans-serif; font-size:1.2rem; font-weight:700; border:1.5px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.07); color:var(--white); cursor:pointer; transition:all 0.12s; }
+.si-btn:active { transform:scale(0.9); }
+.si-btn.used { opacity:0.25; pointer-events:none; text-decoration:line-through; }
+.si-btn.selected { background:var(--gold); border-color:var(--gold); color:#0e1a13; }
+.si-picker { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-bottom:1rem; }
+.wiz-save { width:100%; padding:0.85rem; background:var(--gold); color:#0e1a13; border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:0.15em; cursor:pointer; margin-bottom:0.5rem; }
+.course-list-item { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1rem; background:var(--surface2); border:1.5px solid rgba(255,255,255,0.14); border-radius:10px; margin-bottom:0.5rem; cursor:pointer; transition:border-color 0.15s; }
+.course-list-item:hover { border-color:rgba(212,168,67,0.5); }
+.cli-name { font-size:0.95rem; color:var(--text); font-weight:400; }
+.cli-meta { font-size:0.68rem; color:var(--muted); margin-top:3px; }
+.cli-del { background:none; border:none; color:rgba(255,255,255,0.3); font-size:1rem; cursor:pointer; padding:4px 8px; border-radius:5px; }
+.cli-del:hover { color:var(--red); }
+
+/* ── SCORECARD ── */
+.sc-table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+.sc-table th { font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:0.45rem 0.2rem; border-bottom:1px solid rgba(255,255,255,0.15); text-align:center; font-weight:600; }
+.sc-table th:first-child { text-align:left; }
+.sc-table td { padding:0.45rem 0.2rem; text-align:center; border-bottom:1px solid rgba(255,255,255,0.06); color:var(--text); }
+.sc-table td:first-child { text-align:left; color:var(--muted); font-size:0.68rem; }
+.sc-table tr.total-row td { border-top:1px solid rgba(255,255,255,0.15); font-weight:700; color:var(--gold); }
+
+/* ── SCORING SCREEN ── */
+.score-header { background:var(--surface); border-bottom:1.5px solid rgba(255,255,255,0.12); padding:0.85rem 1rem; position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; }
+.sh-left .sh-title { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:600; letter-spacing:0.06em; color:var(--gold); }
+.sh-left .sh-sub { font-size:0.68rem; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+.live-bar { display:flex; overflow-x:auto; border-bottom:1.5px solid rgba(255,255,255,0.1); background:var(--surface); }
+.live-cell { flex:1; min-width:70px; padding:0.7rem 0.4rem; text-align:center; border-right:1px solid rgba(255,255,255,0.1); }
+.live-cell:last-child { border-right:none; }
+.lc-name { font-size:0.58rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lc-pts { font-family:'Barlow Condensed',sans-serif; font-size:1.8rem; font-weight:700; line-height:1; color:var(--white); }
+.lc-hcp { font-size:0.58rem; color:var(--muted); margin-top:2px; }
+.hole-panel { padding:1rem; }
+.hole-hdr { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1rem; }
+.hole-num { font-family:'Barlow Condensed',sans-serif; font-size:3rem; font-weight:700; line-height:1; color:var(--gold); }
+.hole-lbl { font-size:0.65rem; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
+.hole-info { text-align:right; font-size:0.85rem; color:var(--text); font-weight:400; }
+.gi-row { background:var(--surface2); border:1.5px solid rgba(255,255,255,0.14); border-radius:10px; padding:0.8rem 1rem; display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; }
+.gi-left .gi-name { font-size:0.95rem; display:flex; align-items:center; gap:5px; color:var(--text); font-weight:400; }
+.gi-left .gi-hcp { font-size:0.65rem; color:var(--muted); margin-top:3px; }
+.counter { display:flex; align-items:center; gap:0.6rem; }
+.c-btn { width:40px; height:40px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:var(--white); font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; transition:background 0.12s; }
+.c-btn:active { background:rgba(255,255,255,0.25); }
+.c-val { font-family:'Barlow Condensed',sans-serif; font-size:2.2rem; font-weight:600; min-width:2rem; text-align:center; line-height:1; color:var(--white); }
+.hole-actions { display:grid; grid-template-columns:auto 1fr; gap:0.6rem; margin-top:0.75rem; }
+.btn-back-hole { padding:0.9rem 1rem; background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.18); color:var(--text); border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.1em; cursor:pointer; white-space:nowrap; }
+.btn-back-hole:disabled { opacity:0.25; pointer-events:none; }
+.btn-record { width:100%; padding:0.9rem; background:var(--green-acc); color:#0a160e; border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:0.18em; cursor:pointer; }
+.group-tab-bar { display:flex; gap:0.4rem; padding:0.6rem 1rem; border-bottom:1.5px solid rgba(255,255,255,0.1); overflow-x:auto; background:var(--surface); }
+.group-tab { padding:0.4rem 0.9rem; border-radius:20px; font-family:'Barlow Condensed',sans-serif; font-size:0.88rem; font-weight:600; letter-spacing:0.08em; cursor:pointer; border:1.5px solid rgba(255,255,255,0.18); background:none; color:var(--text); white-space:nowrap; transition:all 0.15s; }
+.group-tab.active { background:rgba(212,168,67,0.18); border-color:rgba(212,168,67,0.6); color:var(--gold); }
+
+/* ── HCP ADJUSTMENT MODAL ── */
+.hcp-row { display:flex; align-items:center; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+.hcp-row:last-child { border-bottom:none; }
+.hcp-name { font-size:0.95rem; color:var(--text); }
+.hcp-change { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:700; }
+.hcp-up { color:var(--red); }
+.hcp-down { color:var(--green-acc); }
+.hcp-same { color:var(--muted); }
+
+/* Notification */
+.notif { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:#1a2e1f; border:1.5px solid rgba(255,255,255,0.2); border-radius:10px; padding:0.75rem 1.5rem; font-size:0.88rem; color:var(--white); z-index:500; white-space:nowrap; opacity:0; transition:opacity 0.25s; pointer-events:none; font-weight:400; }
+.notif.show { opacity:1; }
+
+/* Loading */
+.loading { text-align:center; padding:2rem; color:var(--muted); font-size:0.88rem; }
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div id="home" class="screen active">
+  <div class="brand">
+    <div class="brand-icon">⛳</div>
+    <div class="brand-name">GOLF TOURNAMENT</div>
+    <div class="brand-tag">Multi-round · Stableford · Shared scoring</div>
+  </div>
+  <div id="home-active-tournament" style="width:100%;max-width:440px;display:none;margin-bottom:0.5rem;"></div>
+  <div class="home-card" style="width:100%;max-width:440px;" onclick="showScreen('setup-tournament');initSetup();">
+    <div class="home-card-icon">🏆</div>
+    <div><div class="home-card-title">NEW TOURNAMENT</div><div class="home-card-desc">Set up rounds, players & groups</div></div>
+  </div>
+  <div class="home-card" style="width:100%;max-width:440px;" onclick="joinTournament()">
+    <div class="home-card-icon">📲</div>
+    <div><div class="home-card-title">JOIN TOURNAMENT</div><div class="home-card-desc">Enter a tournament code to score your group</div></div>
+  </div>
+  <div class="home-divider">or</div>
+  <div class="home-card" style="width:100%;max-width:440px;" onclick="loadPastTournaments()">
+    <div class="home-card-icon">📋</div>
+    <div><div class="home-card-title">PAST TOURNAMENTS</div><div class="home-card-desc">View results & scorecards</div></div>
+  </div>
+  <div style="width:100%;max-width:440px;margin-top:1.5rem;">
+    <button onclick="nukeAllData()" style="width:100%;padding:0.75rem;background:rgba(224,112,85,0.15);border:1.5px solid rgba(224,112,85,0.5);color:#e07055;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.15em;cursor:pointer;">🗑 CLEAR ALL DATA & START FRESH</button>
+    <button onclick="showDebug()" style="margin-top:0.5rem;width:100%;padding:0.65rem;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:var(--text);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:600;letter-spacing:0.1em;cursor:pointer;">🔍 SHOW DEBUG INFO</button>
+    <div id="debug-panel" style="margin-top:0.75rem;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:0.75rem;font-size:0.65rem;color:#c8deca;font-family:monospace;word-break:break-all;display:none;max-height:300px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- ══ SETUP TOURNAMENT ══ -->
+<div id="setup-tournament" class="screen page-wrap">
+  <div class="page-header">
+    <button class="btn-ghost" id="setup-back-btn" onclick="setupBack()">← Back</button>
+    <h2 id="setup-step-title">New Tournament</h2>
+    <div id="setup-step-indicator" style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;">1 / 4</div>
+  </div>
+  <!-- Step progress bar -->
+  <div style="display:flex;height:3px;background:rgba(255,255,255,0.06);">
+    <div id="setup-progress-bar" style="background:var(--gold);transition:width 0.3s;width:25%;"></div>
+  </div>
+  <div class="page-body">
+
+    <!-- STEP 1: Details -->
+    <div id="setup-step-1">
+      <div class="card">
+        <div class="card-title">Tournament Details</div>
+        <div class="field"><label>Tournament Name</label><input id="t-name" type="text" placeholder="e.g. Marbella 2026"></div>
+        <div class="two-col">
+          <div class="field" style="margin:0"><label>Number of Rounds</label>
+            <select id="t-rounds" onchange="if(setupState.roundCourses)renderRoundCourses()">
+              <option value="2">2 Rounds</option><option value="3" selected>3 Rounds</option><option value="4">4 Rounds</option><option value="5">5 Rounds</option><option value="6">6 Rounds</option><option value="7">7 Rounds</option><option value="8">8 Rounds</option><option value="9">9 Rounds</option><option value="10">10 Rounds</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0"><label>Holes per Round</label>
+            <select id="t-holes" onchange="if(setupState.roundCourses)renderRoundCourses()">
+              <option value="18" selected>18 Holes</option><option value="9">9 Holes</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Handicap Adjustment</label>
+          <select id="t-hcp-adjust">
+            <option value="yes" selected>Yes — adjust after each round</option>
+            <option value="no">No — keep starting handicaps throughout</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;max-width:none;" onclick="setupNext(2)">NEXT: Courses →</button>
+    </div>
+
+    <!-- STEP 2: Courses -->
+    <div id="setup-step-2" style="display:none;">
+      <div class="card">
+        <div class="card-title">Rounds & Courses</div>
+        <div id="round-course-list"></div>
+      </div>
+      <button class="btn-primary" style="width:100%;max-width:none;" onclick="setupNext(3)">NEXT: Players →</button>
+    </div>
+
+    <!-- STEP 3: Players -->
+    <div id="setup-step-3" style="display:none;">
+      <div class="card">
+        <div class="card-title">Players</div>
+        <div id="players-list"></div>
+        <button class="btn-secondary" onclick="addPlayer()" style="margin-top:0.5rem;">+ Add Player</button>
+      </div>
+      <button class="btn-primary" style="width:100%;max-width:none;" onclick="setupNext(4)">NEXT: Groups →</button>
+    </div>
+
+    <!-- STEP 4: Groups -->
+    <div id="setup-step-4" style="display:none;">
+      <div class="card">
+        <div class="card-title">Groups</div>
+        <div class="hint" style="margin-bottom:0.75rem;">Define your groups and assign players.</div>
+        <div id="groups-config"></div>
+        <button class="btn-secondary" onclick="addGroup()">+ Add Group</button>
+        <div id="group-assign-area" style="margin-top:1rem;"></div>
+      </div>
+      <button class="btn-primary" style="width:100%;max-width:none;" onclick="createTournament()">CREATE TOURNAMENT →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ TOURNAMENT LOBBY ══ -->
+<div id="tournament-lobby" class="screen page-wrap">
+  <div class="page-header">
+    <button class="btn-ghost" onclick="showScreen('home')">← Home</button>
+    <h2 id="lobby-title">Tournament</h2>
+    <button class="btn-ghost" onclick="showShareCode()">Share 📤</button>
+  </div>
+  <div class="page-body">
+    <div id="lobby-header-bar"></div>
+    <div style="margin-bottom:1rem;">
+      <div class="card-title" style="margin-bottom:0.5rem;">ROUNDS</div>
+      <div id="lobby-rounds"></div>
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:0.5rem;">LEADERBOARD</div>
+      <div id="lobby-leaderboard"></div>
+    </div>
+    <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08);text-align:center;">
+      <button onclick="hardDeleteTournament(appState.currentTournamentId)" style="background:none;border:1px solid rgba(217,112,85,0.4);color:#e07055;border-radius:8px;padding:0.5rem 1.25rem;font-size:0.75rem;letter-spacing:0.1em;cursor:pointer;">🗑 Delete Tournament</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROUND SCORING ══ -->
+<div id="round-scoring" class="screen" style="background:var(--bg);min-height:100vh;">
+  <div class="score-header">
+    <div class="sh-left">
+      <div class="sh-title" id="sc-title">Round 1</div>
+      <div class="sh-sub" id="sc-sub">Hole 1</div>
+    </div>
+    <button class="btn-ghost" onclick="exitScoring()">← Lobby</button>
+  </div>
+  <div class="group-tab-bar" id="group-tab-bar"></div>
+  <div class="live-bar" id="live-bar"></div>
+  <div class="hole-panel">
+    <div class="hole-hdr">
+      <div><div class="hole-lbl">Hole</div><div class="hole-num" id="sc-hole-num">1</div></div>
+      <div class="hole-info" id="sc-hole-info"></div>
+    </div>
+    <div id="sc-inputs"></div>
+    <div class="hole-actions">
+      <button class="btn-back-hole" id="sc-back-btn" onclick="scBack()">← Back</button>
+      <button class="btn-record" onclick="scRecord()">RECORD HOLE →</button>
+    </div>
+  </div>
+  <div style="padding:0.5rem 1rem 2rem;">
+    <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Scorecard</div>
+    <table class="sc-table"><thead id="sc-log-head"></thead><tbody id="sc-log-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ══ PAST TOURNAMENTS ══ -->
+<div id="past-tournaments" class="screen page-wrap">
+  <div class="page-header">
+    <button class="btn-ghost" onclick="showScreen('home')">← Back</button>
+    <h2>Past Tournaments</h2>
+  </div>
+  <div class="page-body" id="past-list">
+    <div class="loading">Loading...</div>
+  </div>
+</div>
+
+<!-- ══ COURSE WIZARD MODAL ══ -->
+<div class="modal-overlay" id="course-wizard-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <button class="btn-ghost" onclick="closeWizard()">Cancel</button>
+      <div style="text-align:center;">
+        <div class="modal-title" id="wiz-title">Add Course</div>
+        <div class="modal-sub" id="wiz-sub" style="margin-bottom:0;"></div>
+      </div>
+      <div style="width:60px;"></div>
+    </div>
+
+    <!-- Phase 0: Name -->
+    <div id="wiz-phase-name">
+      <div class="field" style="margin-bottom:1.25rem;">
+        <label>Course Name</label>
+        <input id="wiz-course-name" type="text" placeholder="e.g. Valderrama" style="font-size:1.1rem;padding:0.75rem;" oninput="checkWizName()" onkeydown="if(event.key==='Enter'&&this.value.trim())wizGoHoles()">
+      </div>
+      <button id="wiz-name-next" onclick="wizGoHoles()" disabled style="width:100%;padding:0.85rem;background:var(--green-acc);color:#0a160e;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.15em;cursor:pointer;opacity:0.4;">START — Enter Hole Data →</button>
+    </div>
+
+    <!-- Phase 1: Holes -->
+    <div id="wiz-phase-holes" style="display:none;">
+      <div id="wiz-dots" style="display:flex;gap:3px;margin-bottom:1rem;flex-wrap:wrap;"></div>
+      <div style="display:flex;align-items:baseline;gap:0.5rem;margin-bottom:1rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:700;color:var(--gold);line-height:1;" id="wiz-hole-num">1</div>
+        <div style="font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);" id="wiz-hole-of">of 18</div>
+      </div>
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Par</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="wiz-par-btns"></div>
+      </div>
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Stroke Index <span id="wiz-si-chosen" style="color:var(--gold);font-size:0.75rem;"></span></div>
+        <div class="si-picker" id="wiz-si-btns"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+        <button onclick="wizHoleBack()" id="wiz-back-btn" style="padding:0.75rem;background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:0.1em;cursor:pointer;">← Back</button>
+        <button onclick="wizHoleNext()" id="wiz-next-btn" style="padding:0.75rem;background:var(--green-acc);color:#0a160e;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.1em;cursor:pointer;">Next →</button>
+      </div>
+    </div>
+
+    <!-- Phase 2: Review -->
+    <div id="wiz-phase-review" style="display:none;">
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.75rem;">Check all holes then confirm.</div>
+      <div id="wiz-review-grid" style="display:grid;gap:4px;margin-bottom:1rem;"></div>
+      <div style="font-size:0.65rem;color:var(--muted);text-align:center;margin-bottom:1rem;">Total par: <span id="wiz-review-par" style="color:var(--white);font-weight:600;"></span></div>
+      <button class="wiz-save" onclick="wizConfirm()">✅ CONFIRM & SAVE</button>
+      <button onclick="wizGoHoles(true)" style="width:100%;margin-top:0.5rem;padding:0.65rem;background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:600;letter-spacing:0.1em;cursor:pointer;">← Redo from Hole 1</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COURSES MODAL ══ -->
+<div class="modal-overlay" id="courses-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Saved Courses</div>
+      <button class="btn-close" onclick="closeCoursesModal()">✕</button>
+    </div>
+    <div id="courses-list-items" style="margin-bottom:1rem;"></div>
+    <button onclick="openWizardNew()" style="width:100%;padding:0.75rem;background:rgba(212,168,67,0.08);border:1.5px dashed rgba(212,168,67,0.4);border-radius:10px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:0.1em;cursor:pointer;margin-bottom:0.5rem;">＋ Add New Course</button>
+    <button onclick="closeCoursesModal()" style="width:100%;padding:0.5rem;background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;letter-spacing:0.08em;text-decoration:underline;">Done</button>
+  </div>
+</div>
+
+<!-- ══ JOIN MODAL ══ -->
+<div class="modal-overlay" id="join-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Join Tournament</div>
+      <button class="btn-close" onclick="document.getElementById('join-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-sub">Enter the 6-character code shared by your tournament organiser.</div>
+    <div class="field"><label>Tournament Code</label><input id="join-code" type="text" placeholder="e.g. ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:0.2em;font-size:1.3rem;text-align:center;" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="field"><label>Your Name (to identify your group)</label><input id="join-name" type="text" placeholder="e.g. Steve"></div>
+    <button class="btn-primary" style="width:100%;max-width:none;" onclick="doJoin()">JOIN →</button>
+  </div>
+</div>
+
+<!-- ══ SHARE MODAL ══ -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal-box" style="text-align:center;">
+    <div class="modal-header" style="justify-content:flex-end;"><button class="btn-close" onclick="document.getElementById('share-modal').classList.remove('open')">✕</button></div>
+    <div style="font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Tournament Code</div>
+    <div id="share-code-display" style="font-family:'Barlow Condensed',sans-serif;font-size:3.5rem;font-weight:700;color:var(--gold);letter-spacing:0.3em;margin-bottom:0.5rem;"></div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1.5rem;">Share this code with other scorers so they can join and enter scores for their group.</div>
+    <button onclick="copyCode()" style="width:100%;padding:0.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:0.15em;cursor:pointer;">📋 COPY CODE</button>
+  </div>
+</div>
+
+<!-- ══ HCP ADJUSTMENT MODAL ══ -->
+<div class="modal-overlay" id="hcp-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Handicap Adjustments</div>
+      <button class="btn-close" onclick="document.getElementById('hcp-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-sub">Based on Round <span id="hcp-round-num">1</span> performance vs group average.</div>
+    <div id="hcp-rows"></div>
+    <button class="btn-primary" style="width:100%;max-width:none;margin-top:1rem;" onclick="applyHcpAdjustments()">APPLY & START NEXT ROUND →</button>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let appState = {
+  currentTournamentId: null,
+  currentRoundIdx: null,
+  currentGroupIdx: null,
+  scoring: { hole: 0, scores: [] }
+};
+
+let wizState = {
+  hole: 0, totalHoles: 18,
+  si: [], par: [],
+  targetRoundIdx: null, // which round we're setting course for
+  fromCoursesModal: false,
+  courseName: ''
+};
+
+let setupState = {
+  players: [], groups: [], roundCourses: []
+};
+
+// ═══════════════════════════════════════════════════
+// SCREEN NAV
+// ═══════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════════
+// STORAGE (shared & personal)
+// ═══════════════════════════════════════════════════
+// STORAGE HELPERS — all localStorage for reliability
+// (window.storage shared API reserved for future cross-device sync)
+// ═══════════════════════════════════════════════════
+function localGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+  catch(e) { return null; }
+}
+function localSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e) { console.error('localSet error', e); return false; }
+}
+
+// ═══════════════════════════════════════════════════
+// COURSES (localStorage — personal, device-local)
+// ═══════════════════════════════════════════════════
+async function getCourses() {
+  return localGet('golf_courses') || [];
+}
+async function saveCourses(courses) {
+  const ok = localSet('golf_courses', courses);
+  if (!ok) notify('Could not save course');
+  return ok;
+}
+
+// ═══════════════════════════════════════════════════
+// TOURNAMENT DATA (localStorage for now — shared join via export/import later)
+// ═══════════════════════════════════════════════════
+function tKey(id) { return `golf_tournament_${id}`; }
+
+async function getTournament(id) {
+  return localGet(tKey(id));
+}
+async function saveTournament(t) {
+  localSet(tKey(t.id), t);
+  const myList = localGet('golf_my_tournaments') || [];
+  if (!myList.includes(t.id)) myList.push(t.id);
+  localSet('golf_my_tournaments', myList);
+}
+async function getMyTournamentIds() {
+  return localGet('golf_my_tournaments') || [];
+}
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// HOME INIT
+// ═══════════════════════════════════════════════════
+async function initHome() {
+  const myIds = await getMyTournamentIds();
+  const activeBanner = document.getElementById('home-active-tournament');
+  activeBanner.style.display = 'none';
+  activeBanner.innerHTML = '';
+  if (myIds.length > 0) {
+    for (let i = myIds.length - 1; i >= 0; i--) {
+      const t = await getTournament(myIds[i]);
+      if (t && t.status !== 'complete') {
+        activeBanner.style.display = '';
+        activeBanner.innerHTML = `
+          <div style="background:var(--surface2);border:1.5px solid rgba(76,175,118,0.4);border-radius:12px;padding:1rem 1.25rem;width:100%;max-width:440px;">
+            <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--green-acc);margin-bottom:0.3rem;">⛳ Active Tournament</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--white);margin-bottom:0.5rem;">${t.name}</div>
+            <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.85rem;">${t.rounds.length} rounds · ${t.players.length} players</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:0.5rem;">
+              <button onclick="openTournament('${t.id}')" style="padding:0.6rem;background:var(--green-acc);color:#0a160e;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.12em;cursor:pointer;">CONTINUE →</button>
+              <button onclick="hardDeleteTournament('${t.id}')" style="padding:0.6rem 0.85rem;background:rgba(224,112,85,0.15);border:1.5px solid rgba(224,112,85,0.4);color:#e07055;border-radius:8px;font-size:0.8rem;cursor:pointer;">🗑 Delete</button>
+            </div>
+          </div>`;
+        break;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SETUP TOURNAMENT
+// ═══════════════════════════════════════════════════
+async function initSetup() {
+  setupState = { players:[], groups:[{ size:4 }], roundCourses:[] };
+  setupState.players = [
+    {name:'', handicap:''},
+    {name:'', handicap:''},
+    {name:'', handicap:''},
+    {name:'', handicap:''},
+  ];
+  document.getElementById('t-name').value = '';
+  document.getElementById('t-rounds').value = '3';
+  document.getElementById('t-holes').value = '18';
+  document.getElementById('t-hcp-adjust').value = 'yes';
+  goSetupStep(1);
+}
+
+function goSetupStep(step) {
+  [1,2,3,4].forEach(s => {
+    document.getElementById(`setup-step-${s}`).style.display = s === step ? '' : 'none';
+  });
+  const titles = ['', 'Tournament Details', 'Rounds & Courses', 'Players', 'Groups'];
+  document.getElementById('setup-step-title').textContent = titles[step];
+  document.getElementById('setup-step-indicator').textContent = `${step} / 4`;
+  document.getElementById('setup-progress-bar').style.width = `${step * 25}%`;
+  document.getElementById('setup-back-btn').textContent = step === 1 ? '← Back' : '← Back';
+  window.scrollTo(0, 0);
+  appState._setupStep = step;
+
+  if (step === 2) renderRoundCourses();
+  if (step === 3) renderPlayersList();
+  if (step === 4) renderGroupsConfig();
+}
+
+function setupNext(step) {
+  if (step === 2) {
+    if (!document.getElementById('t-name').value.trim()) { notify('Enter a tournament name'); return; }
+  }
+  if (step === 3) {
+    const numRounds = parseInt(document.getElementById('t-rounds').value);
+    for (let i = 0; i < numRounds; i++) {
+      if (!setupState.roundCourses[i]) { notify(`Select a course for Round ${i+1}`); return; }
+    }
+  }
+  if (step === 4) {
+    // Always sync DOM → state before validating
+    syncPlayersFromDOM();
+    const players = setupState.players.filter(p => p.name.trim());
+    if (players.length < 2) { notify('Add at least 2 players'); return; }
+    for (const p of players) {
+      if (p.handicap === '' || isNaN(parseFloat(p.handicap))) { notify(`Enter handicap for ${p.name || 'all players'}`); return; }
+    }
+  }
+  goSetupStep(step);
+}
+
+function setupBack() {
+  const step = appState._setupStep || 1;
+  if (step <= 1) { showScreen('home'); }
+  else { goSetupStep(step - 1); }
+}
+
+function renderSetup() { /* replaced by step-based rendering */ }
+
+async function renderRoundCourses() {
+  const numRounds = parseInt(document.getElementById('t-rounds').value);
+  const numHoles = parseInt(document.getElementById('t-holes').value);
+  const courses = await getCourses();
+
+  // Pad/trim roundCourses
+  while (setupState.roundCourses.length < numRounds) setupState.roundCourses.push(null);
+  setupState.roundCourses = setupState.roundCourses.slice(0, numRounds);
+
+  let html = '';
+  for (let i = 0; i < numRounds; i++) {
+    const rc = setupState.roundCourses[i];
+    html += `<div style="margin-bottom:0.75rem;">
+      <div style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Round ${i+1}</div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <select style="flex:1;" onchange="selectCourse(${i}, this.value)">
+          <option value="">— Select a course —</option>
+          ${courses.map((c,ci) => `<option value="${ci}" ${rc && rc.name===c.name ? 'selected':''}>${c.name}</option>`).join('')}
+        </select>
+        <button onclick="openCoursesModal(${i})" style="background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);color:var(--gold);border-radius:8px;padding:0.4rem 0.7rem;font-size:0.85rem;cursor:pointer;white-space:nowrap;">⚙️ Manage</button>
+      </div>
+      ${rc ? `<div style="font-size:0.6rem;color:var(--green-acc);margin-top:0.3rem;">✓ ${rc.name} · ${rc.holes} holes · Par ${rc.par.reduce((a,b)=>a+b,0)}</div>` : `<div style="font-size:0.6rem;color:var(--muted);margin-top:0.3rem;">No course selected</div>`}
+    </div>`;
+  }
+  document.getElementById('round-course-list').innerHTML = html;
+}
+
+async function selectCourse(roundIdx, courseIdx) {
+  if (courseIdx === '') { setupState.roundCourses[roundIdx] = null; renderSetup(); return; }
+  const courses = await getCourses();
+  const c = courses[parseInt(courseIdx)];
+  if (c) {
+    setupState.roundCourses[roundIdx] = { ...c, holes: c.si.length };
+    renderSetup();
+  }
+}
+
+function renderPlayersList() {
+  let html = '';
+  setupState.players.forEach((p, i) => {
+    html += `<div class="player-block" style="margin-bottom:0.5rem;">
+      <div class="field" style="margin:0"><label>Player ${i+1}</label><input id="pname-${i}" type="text" placeholder="Name" value="${p.name}" oninput="setupState.players[${i}].name=this.value.trim()"></div>
+      <div class="field" style="margin:0"><label>HCP</label><input id="phcp-${i}" type="number" placeholder="0-36" min="0" max="54" step="0.1" value="${p.handicap}" oninput="setupState.players[${i}].handicap=this.value"></div>
+    </div>`;
+  });
+  if (setupState.players.length > 2) {
+    html += `<button onclick="removePlayer()" style="font-size:0.65rem;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0.25rem 0;">Remove last player</button>`;
+  }
+  document.getElementById('players-list').innerHTML = html;
+}
+
+// Read current DOM values into setupState before leaving step 3
+function syncPlayersFromDOM() {
+  setupState.players.forEach((p, i) => {
+    const nameEl = document.getElementById('pname-' + i);
+    const hcpEl = document.getElementById('phcp-' + i);
+    if (nameEl) p.name = nameEl.value.trim();
+    if (hcpEl) p.handicap = hcpEl.value;
+  });
+}
+
+function addPlayer() {
+  setupState.players.push({name:'', handicap:''});
+  renderPlayersList();
+  renderGroupsConfig();
+}
+function removePlayer() {
+  if (setupState.players.length > 2) setupState.players.pop();
+  renderPlayersList();
+  renderGroupsConfig();
+}
+
+function renderGroupsConfig() {
+  const totalPlayers = setupState.players.length;
+  let html = '';
+  let assigned = 0;
+  setupState.groups.forEach((g, gi) => {
+    html += `<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+      <div style="font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);min-width:60px;">Group ${gi+1}</div>
+      <select id="grpsize-${gi}" style="flex:1;" onchange="setupState.groups[${gi}].size=parseInt(this.value);renderGroupsConfig()">
+        ${[2,3,4,5].map(n=>`<option value="${n}" ${g.size===n?'selected':''}>${n} players</option>`).join('')}
+      </select>
+      ${setupState.groups.length > 1 ? `<button onclick="setupState.groups.splice(${gi},1);renderGroupsConfig()" style="background:none;border:none;color:rgba(255,255,255,0.25);cursor:pointer;font-size:1rem;padding:4px;">✕</button>` : ''}
+    </div>`;
+    assigned += g.size;
+  });
+
+  const diff = totalPlayers - assigned;
+  let statusColor = diff === 0 ? 'var(--green-acc)' : 'var(--red)';
+  let statusMsg = diff === 0 ? '✓ All players assigned' : diff > 0 ? `${diff} player(s) not in a group` : `${Math.abs(diff)} too many group slots`;
+  html += `<div style="font-size:0.62rem;color:${statusColor};margin-top:0.25rem;margin-bottom:0.75rem;">${statusMsg}</div>`;
+
+  document.getElementById('groups-config').innerHTML = html;
+
+  // Player assignment
+  let assignHtml = '';
+  if (setupState.players.some(p=>p.name)) {
+    let pIdx = 0;
+    setupState.groups.forEach((g, gi) => {
+      assignHtml += `<div style="margin-bottom:0.75rem;"><div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;">Group ${gi+1}</div>`;
+      for (let s = 0; s < g.size; s++) {
+        const curPlayer = (g.members || [])[s] || '';
+        assignHtml += `<div style="margin-bottom:0.3rem;">
+          <select style="width:100%;" onchange="assignPlayer(${gi},${s},this.value)">
+            <option value="">— Select player —</option>
+            ${setupState.players.map((p,pi) => p.name ? `<option value="${pi}" ${curPlayer==pi?'selected':''}>${p.name}</option>` : '').join('')}
+          </select>
+        </div>`;
+        pIdx++;
+      }
+      assignHtml += '</div>';
+    });
+  }
+  document.getElementById('group-assign-area').innerHTML = assignHtml;
+}
+
+function assignPlayer(groupIdx, slotIdx, playerIdx) {
+  if (!setupState.groups[groupIdx].members) setupState.groups[groupIdx].members = [];
+  setupState.groups[groupIdx].members[slotIdx] = playerIdx === '' ? null : parseInt(playerIdx);
+}
+
+function addGroup() {
+  setupState.groups.push({ size: 3 });
+  renderGroupsConfig();
+}
+
+async function createTournament() {
+  syncPlayersFromDOM();
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { notify('Enter a tournament name'); return; }
+
+  const numRounds = parseInt(document.getElementById('t-rounds').value);
+  const numHoles = parseInt(document.getElementById('t-holes').value);
+  const hcpAdjust = document.getElementById('t-hcp-adjust').value === 'yes';
+
+  // Validate courses
+  for (let i = 0; i < numRounds; i++) {
+    if (!setupState.roundCourses[i]) { notify(`Select a course for Round ${i+1}`); return; }
+  }
+
+  // Validate players
+  const players = setupState.players.filter(p => p.name.trim());
+  if (players.length < 2) { notify('Add at least 2 players'); return; }
+  for (const p of players) {
+    if (p.handicap === '' || isNaN(parseFloat(p.handicap))) {
+      notify(`Enter handicap for ${p.name || 'all players'}`); return;
+    }
+  }
+
+  // Read group sizes fresh from DOM selects
+  document.querySelectorAll('[id^="grpsize-"]').forEach(sel => {
+    const gi = parseInt(sel.id.replace('grpsize-', ''));
+    if (setupState.groups[gi]) setupState.groups[gi].size = parseInt(sel.value);
+  });
+
+  // Build groups — slice players array by group sizes
+  const groups = [];
+  let playerCursor = 0;
+  for (let gi = 0; gi < setupState.groups.length; gi++) {
+    const size = setupState.groups[gi].size;
+    const indices = [];
+    for (let s = 0; s < size && playerCursor < players.length; s++) {
+      indices.push(playerCursor++);
+    }
+    groups.push({ name: 'Group ' + (gi + 1), playerIndices: indices });
+  }
+  // Any remaining players go into last group
+  while (playerCursor < players.length) {
+    groups[groups.length - 1].playerIndices.push(playerCursor++);
+  }
+
+  const id = generateCode();
+  const tournament = {
+    id,
+    name,
+    createdAt: Date.now(),
+    status: 'active',
+    hcpAdjust,
+    players: players.map(p => ({
+      name: p.name.trim(),
+      startHcp: parseFloat(p.handicap),
+      roundHcps: [parseFloat(p.handicap)]
+    })),
+    groups,
+    rounds: setupState.roundCourses.slice(0, numRounds).map((c, i) => ({
+      number: i + 1,
+      course: c,
+      holes: numHoles,
+      status: i === 0 ? 'active' : 'upcoming',
+      scores: {}
+    }))
+  };
+
+  try {
+    await saveTournament(tournament);
+    notify(`Tournament created — ${players.length} players, ${groups.length} group(s) ✓`);
+    appState.currentTournamentId = id;
+    openTournament(id);
+  } catch(e) {
+    console.error('createTournament error', e);
+    notify('Failed to save tournament — please try again');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TOURNAMENT LOBBY
+// ═══════════════════════════════════════════════════
+async function openTournament(id) {
+  appState.currentTournamentId = id;
+  showScreen('tournament-lobby');
+  await renderLobby();
+}
+
+async function renderLobby() {
+  const id = appState.currentTournamentId;
+  const t = await getTournament(id);
+  if (!t) { notify('Tournament not found'); showScreen('home'); return; }
+
+  document.getElementById('lobby-title').textContent = t.name;
+
+  document.getElementById('lobby-header-bar').innerHTML = `
+    <div class="t-header-bar">
+      <div class="t-name">${t.name}</div>
+      <div class="t-meta">${t.rounds.length} rounds · ${t.players.length} players · Code: <strong style="color:var(--gold);letter-spacing:0.1em;">${t.id}</strong></div>
+    </div>`;
+
+  // Rounds
+  let roundsHtml = '';
+  t.rounds.forEach((r, i) => {
+    const statusLabel = r.status === 'complete' ? 'Complete' : r.status === 'active' ? 'In Progress' : 'Upcoming';
+    const statusClass = r.status;
+    const canScore = r.status !== 'upcoming';
+    const courseName = r.course?.name || 'Course TBC';
+    const par = r.course ? r.course.par.slice(0,r.holes).reduce((a,b)=>a+b,0) : '—';
+    roundsHtml += `<div class="round-card ${r.status === 'active' ? 'active-round' : r.status === 'complete' ? 'complete-round' : ''}" onclick="${canScore ? `startScoring(${i})` : ''}">
+      <div class="rc-num">${i+1}</div>
+      <div class="rc-body">
+        <div class="rc-title">Round ${i+1} — ${courseName}</div>
+        <div class="rc-sub">${r.holes} holes · Par ${par}</div>
+      </div>
+      <span class="rc-status ${statusClass}">${statusLabel}</span>
+    </div>`;
+  });
+  document.getElementById('lobby-rounds').innerHTML = roundsHtml;
+
+  // Leaderboard
+  renderLobbyLeaderboard(t);
+}
+
+function renderLobbyLeaderboard(t) {
+  // Sum stableford points across completed/active rounds
+  const totals = t.players.map((p, pi) => {
+    let pts = 0;
+    t.rounds.forEach((r, ri) => {
+      if (r.status === 'upcoming') return;
+      // Find which group this player is in
+      const gi = t.groups.findIndex(g => g.playerIndices.includes(pi));
+      if (gi < 0) return;
+      const key = `${gi}-${pi}`;
+      const grossScores = r.scores[key];
+      if (!grossScores) return;
+      const hcp = p.roundHcps[ri] || p.startHcp;
+      const shots = calcShotsPerHole(hcp, r.course.si.slice(0, r.holes));
+      grossScores.forEach((g, h) => {
+        if (g > 0) pts += stablefordPoints(g, r.course.par[h], shots[h]);
+      });
+    });
+    return { name: p.name, pts, hcp: p.roundHcps[p.roundHcps.length-1] || p.startHcp };
+  });
+
+  totals.sort((a,b) => b.pts - a.pts);
+
+  let html = '';
+  totals.forEach((p, i) => {
+    const displayName = p.name || `Player ${i+1}`;
+    html += `<div class="lb-row ${i===0?'lb-1st':''}">
+      <div class="lb-pos">${i+1}</div>
+      <div class="lb-info">
+        <div class="lb-name">${displayName}</div>
+        <div class="lb-hcp">HCP ${p.hcp.toFixed(1)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="lb-pts">${p.pts}</div>
+        <div class="lb-pts-label">pts</div>
+      </div>
+    </div>`;
+  });
+  if (!html) html = '<div class="loading">No scores yet</div>';
+  document.getElementById('lobby-leaderboard').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════
+async function startScoring(roundIdx) {
+  appState.currentRoundIdx = roundIdx;
+  const t = await getTournament(appState.currentTournamentId);
+  if (!t) return;
+
+  // Default to first group
+  appState.currentGroupIdx = 0;
+
+  // Init scoring state from saved data
+  const r = t.rounds[roundIdx];
+  appState.scoring = {
+    hole: 0,
+    groupScores: {} // groupIdx -> playerIdx -> [gross per hole]
+  };
+
+  // Load existing scores
+  t.groups.forEach((g, gi) => {
+    appState.scoring.groupScores[gi] = {};
+    g.playerIndices.forEach(pi => {
+      const key = `${gi}-${pi}`;
+      appState.scoring.groupScores[gi][pi] = r.scores[key] ? [...r.scores[key]] : new Array(r.holes).fill(0);
+    });
+  });
+
+  // Find furthest hole any group has scored
+  let maxHole = 0;
+  t.groups.forEach((g, gi) => {
+    g.playerIndices.forEach(pi => {
+      const key = `${gi}-${pi}`;
+      const s = r.scores[key];
+      if (s) {
+        for (let h = s.length - 1; h >= 0; h--) {
+          if (s[h] > 0) { maxHole = Math.max(maxHole, h + 1); break; }
+        }
+      }
+    });
+  });
+  appState.scoring.hole = Math.min(maxHole, r.holes - 1);
+
+  showScreen('round-scoring');
+  renderScoring();
+}
+
+function renderScoring() {
+  const id = appState.currentTournamentId;
+  getTournament(id).then(t => {
+    if (!t) return;
+    const ri = appState.currentRoundIdx;
+    const gi = appState.currentGroupIdx;
+    const r = t.rounds[ri];
+    const h = appState.scoring.hole;
+    const group = t.groups[gi];
+
+    appState._cachedTournament = t;
+    document.getElementById('sc-title').textContent = `Round ${ri+1} — ${r.course.name}`;
+    document.getElementById('sc-sub').textContent = `Group ${gi+1} · Hole ${h+1} of ${r.holes}`;
+
+    // Group tabs
+    let tabsHtml = '';
+    t.groups.forEach((g, gidx) => {
+      tabsHtml += `<button class="group-tab ${gidx===gi?'active':''}" onclick="switchGroup(${gidx})">${g.name}</button>`;
+    });
+    document.getElementById('group-tab-bar').innerHTML = tabsHtml;
+
+    // Live scores bar
+    const si = r.course.si.slice(0, r.holes);
+    let liveHtml = '';
+    group.playerIndices.forEach(pi => {
+      const p = t.players[pi];
+      const hcp = p.roundHcps[ri] || p.startHcp;
+      const shots = calcShotsPerHole(hcp, si);
+      const grossArr = (appState.scoring.groupScores[gi] && appState.scoring.groupScores[gi][pi]) ? appState.scoring.groupScores[gi][pi] : [];
+      let pts = 0;
+      grossArr.forEach((g, hh) => { if (g > 0) pts += stablefordPoints(g, r.course.par[hh], shots[hh]); });
+      const hasAnyScore = grossArr.some(s => s > 0);
+      liveHtml += `<div class="live-cell">
+        <div class="lc-name">${p.name}</div>
+        <div class="lc-pts" style="color:${hasAnyScore ? 'var(--white)' : 'rgba(255,255,255,0.3)'};">${hasAnyScore ? pts : '#'}</div>
+        <div class="lc-hcp">HCP ${hcp.toFixed(1)}</div>
+      </div>`;
+    });
+    document.getElementById('live-bar').innerHTML = liveHtml;
+
+    // Hole info
+    const hcp = r.course.si[h];
+    const par = r.course.par[h];
+    document.getElementById('sc-hole-num').textContent = h + 1;
+    document.getElementById('sc-hole-info').innerHTML = `Par ${par}<br><span style="font-size:0.65rem;color:var(--muted);">SI ${hcp}</span>`;
+
+    // Inputs
+    let inputsHtml = '';
+    group.playerIndices.forEach(pi => {
+      const p = t.players[pi];
+      const pHcp = p.roundHcps[ri] || p.startHcp;
+      const shotsOnHole = calcShotsPerHole(pHcp, si)[h];
+      const rawVal = (appState.scoring.groupScores[gi] && appState.scoring.groupScores[gi][pi]) ? appState.scoring.groupScores[gi][pi][h] : 0;
+      const active = rawVal > 0;
+      const displayVal = active ? rawVal : '#';
+      const pts = active ? stablefordPoints(rawVal, par, shotsOnHole) : null;
+      const ptsLabel = active ? (pts + ' pt' + (pts !== 1 ? 's' : '')) : 'tap # to enter score';
+      inputsHtml += `<div class="gi-row" style="${!active ? 'opacity:0.6;' : ''}">
+        <div class="gi-left">
+          <div class="gi-name">${p.name} ${shotsOnHole > 0 ? `<span class="badge badge-gold">+${shotsOnHole}</span>` : ''}</div>
+          <div class="gi-hcp" style="color:${active ? 'var(--muted)' : 'rgba(255,255,255,0.35)'};">HCP ${pHcp.toFixed(1)} · Net par ${par - shotsOnHole} · ${ptsLabel}</div>
+        </div>
+        <div class="counter">
+          <button class="c-btn" onclick="adjScore(${gi},${pi},-1)" style="visibility:${active ? 'visible' : 'hidden'};">−</button>
+          <div class="c-val" id="cv-${gi}-${pi}" onclick="activateScore(${gi},${pi})" style="cursor:${active ? 'default' : 'pointer'};color:${active ? 'var(--white)' : 'rgba(255,255,255,0.3)'};">${displayVal}</div>
+          <button class="c-btn" onclick="adjScore(${gi},${pi},1)">${active ? '+' : '▶'}</button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('sc-inputs').innerHTML = inputsHtml;
+
+    // Back btn
+    document.getElementById('sc-back-btn').disabled = h === 0;
+
+    // Scorecard log
+    renderScorecardLog(t, ri, gi);
+  });
+}
+
+function activateScore(gi, pi) {
+  const h = appState.scoring.hole;
+  if (!appState.scoring.groupScores[gi]) appState.scoring.groupScores[gi] = {};
+  if (!appState.scoring.groupScores[gi][pi]) appState.scoring.groupScores[gi][pi] = [];
+  if (!appState.scoring.groupScores[gi][pi][h]) {
+    const t = appState._cachedTournament;
+    const par = t ? t.rounds[appState.currentRoundIdx].course.par[h] : 4;
+    appState.scoring.groupScores[gi][pi][h] = par;
+    renderScoring();
+  }
+}
+
+function adjScore(gi, pi, delta) {
+  const h = appState.scoring.hole;
+  if (!appState.scoring.groupScores[gi]) appState.scoring.groupScores[gi] = {};
+  if (!appState.scoring.groupScores[gi][pi]) appState.scoring.groupScores[gi][pi] = [];
+  // If not yet activated, first tap sets to par
+  if (!appState.scoring.groupScores[gi][pi][h]) {
+    const t = appState._cachedTournament;
+    const par = t ? t.rounds[appState.currentRoundIdx].course.par[h] : 4;
+    appState.scoring.groupScores[gi][pi][h] = par;
+    renderScoring();
+    return;
+  }
+  const cur = appState.scoring.groupScores[gi][pi][h];
+  const newVal = Math.max(1, cur + delta);
+  appState.scoring.groupScores[gi][pi][h] = newVal;
+  renderScoring();
+}
+
+function switchGroup(gidx) {
+  appState.currentGroupIdx = gidx;
+  renderScoring();
+}
+
+async function scRecord() {
+  const id = appState.currentTournamentId;
+  const t = await getTournament(id);
+  if (!t) return;
+  const ri = appState.currentRoundIdx;
+  const gi = appState.currentGroupIdx;
+  const h = appState.scoring.hole;
+  const r = t.rounds[ri];
+
+  // Save scores for this group/hole — default any untouched score to par
+  const holePar = r.course.par[h];
+  t.groups[gi].playerIndices.forEach(pi => {
+    const key = `${gi}-${pi}`;
+    if (!r.scores[key]) r.scores[key] = new Array(r.holes).fill(0);
+    const saved = appState.scoring.groupScores[gi] && appState.scoring.groupScores[gi][pi] && appState.scoring.groupScores[gi][pi][h];
+    r.scores[key][h] = saved || holePar;
+  });
+
+  if (h >= r.holes - 1) {
+    // Round complete for this group — check if all groups done
+    const allDone = t.groups.every((g, gidx) =>
+      g.playerIndices.every(pi => {
+        const key = `${gidx}-${pi}`;
+        return r.scores[key] && r.scores[key][r.holes-1] > 0;
+      })
+    );
+    if (allDone) {
+      r.status = 'complete';
+      // Check if tournament complete
+      if (ri === t.rounds.length - 1) {
+        t.status = 'complete';
+      }
+      await saveTournament(t);
+      // Offer HCP adjustment if applicable
+      if (t.hcpAdjust && ri < t.rounds.length - 1) {
+        showHcpModal(t, ri);
+      } else {
+        // Activate next round
+        if (ri < t.rounds.length - 1) {
+          t.rounds[ri + 1].status = 'active';
+          await saveTournament(t);
+        }
+        notify('Round complete! 🎉');
+        showScreen('tournament-lobby');
+        renderLobby();
+      }
+      return;
+    }
+    await saveTournament(t);
+    notify('Group scores saved ✓');
+    showScreen('tournament-lobby');
+    renderLobby();
+    return;
+  }
+
+  await saveTournament(t);
+  appState.scoring.hole++;
+  renderScoring();
+}
+
+function scBack() {
+  if (appState.scoring.hole > 0) {
+    appState.scoring.hole--;
+    renderScoring();
+  }
+}
+
+function renderScorecardLog(t, ri, gi) {
+  const r = t.rounds[ri];
+  const group = t.groups[gi];
+  const si = r.course.si.slice(0, r.holes);
+  const players = group.playerIndices.map(pi => t.players[pi]);
+
+  let headHtml = `<tr><th>Hole</th><th>Par</th><th>SI</th>${players.map(p=>`<th>${p.name.substring(0,6)}</th>`).join('')}</tr>`;
+  let bodyHtml = '';
+  let totals = players.map(() => 0);
+
+  for (let h = 0; h < r.holes; h++) {
+    const scores = group.playerIndices.map((pi, idx) => {
+      const g = (appState.scoring.groupScores[gi][pi] || [])[h] || 0;
+      const hcp = players[idx].roundHcps[ri] || players[idx].startHcp;
+      const shots = calcShotsPerHole(hcp, si)[h];
+      const pts = g > 0 ? stablefordPoints(g, r.course.par[h], shots) : 0;
+      totals[idx] += pts;
+      return g > 0 ? `${g}<br><span class="net-sm" style="color:${pts>=2?'var(--green-acc)':pts===0?'var(--red)':'var(--muted)'}">${pts}pt</span>` : '—';
+    });
+    bodyHtml += `<tr><td>${h+1}</td><td>${r.course.par[h]}</td><td>${r.course.si[h]}</td>${scores.map(s=>`<td>${s}</td>`).join('')}</tr>`;
+  }
+  bodyHtml += `<tr class="total-row"><td>Tot</td><td colspan="2"></td>${totals.map(t=>`<td>${t}</td>`).join('')}</tr>`;
+
+  document.getElementById('sc-log-head').innerHTML = headHtml;
+  document.getElementById('sc-log-body').innerHTML = bodyHtml;
+}
+
+// ═══════════════════════════════════════════════════
+// STABLEFORD MATHS
+// ═══════════════════════════════════════════════════
+function calcShotsPerHole(handicap, siArr) {
+  const h = Math.round(handicap);
+  return siArr.map(si => {
+    let shots = 0;
+    if (h >= si) shots++;
+    if (h >= si + 18) shots++;
+    if (h >= si + 36) shots++;
+    return shots;
+  });
+}
+
+function stablefordPoints(gross, par, shots) {
+  const netScore = gross - shots;
+  const diff = par - netScore;
+  return Math.max(0, diff + 2);
+}
+
+// ═══════════════════════════════════════════════════
+// HANDICAP ADJUSTMENT
+// ═══════════════════════════════════════════════════
+function calcHcpAdjustments(t, roundIdx) {
+  const r = t.rounds[roundIdx];
+  const si = r.course.si.slice(0, r.holes);
+
+  // Calc each player's stableford total for this round
+  const playerTotals = t.players.map((p, pi) => {
+    const gi = t.groups.findIndex(g => g.playerIndices.includes(pi));
+    if (gi < 0) return { pi, pts: 0 };
+    const key = `${gi}-${pi}`;
+    const grossArr = r.scores[key] || [];
+    const hcp = p.roundHcps[roundIdx] || p.startHcp;
+    const shots = calcShotsPerHole(hcp, si);
+    const pts = grossArr.reduce((sum, g, h) => sum + (g > 0 ? stablefordPoints(g, r.course.par[h], shots[h]) : 0), 0);
+    return { pi, pts };
+  });
+
+  const avg = playerTotals.reduce((s, p) => s + p.pts, 0) / playerTotals.length;
+
+  return playerTotals.map(({ pi, pts }) => {
+    const diff = pts - avg;
+    let change = 0;
+    if (diff > 0) change = -0.5 * diff;
+    else if (diff < 0) change = 0.25 * Math.abs(diff);
+    const oldHcp = t.players[pi].roundHcps[roundIdx] || t.players[pi].startHcp;
+    const newHcp = Math.max(0, Math.round((oldHcp + change) * 2) / 2);
+    return { pi, name: t.players[pi].name, pts, avg: avg.toFixed(1), oldHcp, newHcp, change };
+  });
+}
+
+function showHcpModal(t, roundIdx) {
+  const adjustments = calcHcpAdjustments(t, roundIdx);
+  appState._pendingHcpAdj = { t, roundIdx, adjustments };
+  document.getElementById('hcp-round-num').textContent = roundIdx + 1;
+
+  let html = '';
+  adjustments.forEach(a => {
+    const dir = a.newHcp < a.oldHcp ? 'hcp-down' : a.newHcp > a.oldHcp ? 'hcp-up' : 'hcp-same';
+    const arrow = a.newHcp < a.oldHcp ? '↓' : a.newHcp > a.oldHcp ? '↑' : '→';
+    html += `<div class="hcp-row">
+      <div>
+        <div class="hcp-name">${a.name}</div>
+        <div style="font-size:0.6rem;color:var(--muted);">${a.pts} pts (avg ${a.avg})</div>
+      </div>
+      <div class="hcp-change ${dir}">${a.oldHcp.toFixed(1)} ${arrow} ${a.newHcp.toFixed(1)}</div>
+    </div>`;
+  });
+  document.getElementById('hcp-rows').innerHTML = html;
+  document.getElementById('hcp-modal').classList.add('open');
+}
+
+async function applyHcpAdjustments() {
+  const { t, roundIdx, adjustments } = appState._pendingHcpAdj;
+  adjustments.forEach(a => {
+    // Ensure roundHcps array is long enough
+    while (t.players[a.pi].roundHcps.length <= roundIdx + 1) {
+      t.players[a.pi].roundHcps.push(t.players[a.pi].roundHcps[t.players[a.pi].roundHcps.length - 1]);
+    }
+    t.players[a.pi].roundHcps[roundIdx + 1] = a.newHcp;
+  });
+  // Activate next round
+  t.rounds[roundIdx + 1].status = 'active';
+  await saveTournament(t);
+  document.getElementById('hcp-modal').classList.remove('open');
+  notify('Handicaps updated ✓');
+  showScreen('tournament-lobby');
+  renderLobby();
+}
+
+// ═══════════════════════════════════════════════════
+// COURSE WIZARD
+// ═══════════════════════════════════════════════════
+function openWizardForRound(roundIdx) {
+  wizState.targetRoundIdx = roundIdx;
+  wizState.fromCoursesModal = false;
+  openWizardNew();
+}
+
+function openWizardNew() {
+  const savedTarget = wizState.targetRoundIdx; // preserve before reset
+  const holesEl = document.getElementById('t-holes');
+  const numHoles = holesEl ? parseInt(holesEl.value) || 18 : 18;
+  wizState = {
+    hole: 0,
+    totalHoles: numHoles,
+    si: new Array(numHoles).fill(0),
+    par: new Array(numHoles).fill(4),
+    fromCoursesModal: true,
+    courseName: '',
+    targetRoundIdx: savedTarget,
+    editIdx: undefined
+  };
+  document.getElementById('wiz-title').textContent = 'Add Course';
+  document.getElementById('wiz-sub').textContent = '';
+  showWizPhase('name');
+  document.getElementById('wiz-course-name').value = '';
+  checkWizName();
+  document.getElementById('courses-modal').classList.remove('open');
+  document.getElementById('course-wizard-modal').classList.add('open');
+}
+
+async function openWizardEdit(courseIdx) {
+  const courses = await getCourses();
+  const c = courses[courseIdx];
+  if (!c) return;
+  wizState = { hole:0, totalHoles:c.si.length, si:[...c.si], par:[...c.par], fromCoursesModal:true, editIdx:courseIdx, courseName:c.name };
+  document.getElementById('wiz-title').textContent = 'Edit Course';
+  document.getElementById('wiz-sub').textContent = c.name;
+  showWizPhase('holes');
+  renderWizHole();
+  document.getElementById('courses-modal').classList.remove('open');
+  document.getElementById('course-wizard-modal').classList.add('open');
+}
+
+function showWizPhase(phase) {
+  ['name','holes','review'].forEach(p => {
+    document.getElementById(`wiz-phase-${p}`).style.display = p === phase ? '' : 'none';
+  });
+}
+
+function checkWizName() {
+  const val = (document.getElementById('wiz-course-name')?.value||'').trim();
+  const btn = document.getElementById('wiz-name-next');
+  btn.disabled = !val; btn.style.opacity = val ? '1' : '0.4';
+}
+
+function wizGoHoles(redo) {
+  if (!redo) {
+    const name = (document.getElementById('wiz-course-name')?.value||'').trim();
+    if (!name) return;
+    wizState.courseName = name;
+    if (redo) { wizState.hole = 0; }
+  }
+  wizState.hole = 0;
+  showWizPhase('holes');
+  document.getElementById('wiz-title').textContent = 'Hole Data';
+  document.getElementById('wiz-hole-of').textContent = `of ${wizState.totalHoles}`;
+  renderWizHole();
+}
+
+function renderWizHole() {
+  const h = wizState.hole;
+  const N = wizState.totalHoles;
+  document.getElementById('wiz-hole-num').textContent = h + 1;
+  document.getElementById('wiz-hole-of').textContent = `of ${N}`;
+
+  // Dots
+  document.getElementById('wiz-dots').innerHTML = Array.from({length:N}, (_,i) => {
+    const has = wizState.si[i] > 0;
+    const active = i === h;
+    const bg = active ? 'var(--gold)' : has ? 'var(--green-acc)' : 'rgba(255,255,255,0.1)';
+    const size = active ? '10px' : '7px';
+    return `<div style="width:${size};height:${size};border-radius:50%;background:${bg};flex-shrink:0;cursor:pointer;transition:all 0.15s;" onclick="wizJump(${i})"></div>`;
+  }).join('');
+
+  // Par
+  const curPar = wizState.par[h] || 4;
+  document.getElementById('wiz-par-btns').innerHTML = [3,4,5].map(n =>
+    `<button class="si-btn ${n===curPar?'selected':''}" onclick="wizSetPar(${n})">${n}</button>`
+  ).join('');
+
+  // SI
+  const usedSI = new Set(wizState.si.filter((v,i) => v > 0 && i !== h));
+  const curSI = wizState.si[h];
+  document.getElementById('wiz-si-btns').innerHTML = Array.from({length:N}, (_,i) => {
+    const n = i + 1;
+    const cls = n === curSI ? 'selected' : usedSI.has(n) ? 'used' : '';
+    return `<button class="si-btn ${cls}" onclick="wizSetSI(${n})">${n}</button>`;
+  }).join('');
+  document.getElementById('wiz-si-chosen').textContent = curSI > 0 ? `— SI ${curSI}` : '';
+
+  const backBtn = document.getElementById('wiz-back-btn');
+  backBtn.disabled = h === 0; backBtn.style.opacity = h === 0 ? '0.3' : '1';
+  document.getElementById('wiz-next-btn').textContent = h === N - 1 ? 'Review →' : 'Next →';
+}
+
+function wizSetPar(n) { wizState.par[wizState.hole] = n; renderWizHole(); }
+function wizSetSI(n) { wizState.si[wizState.hole] = n; renderWizHole(); }
+function wizJump(idx) { wizState.hole = idx; renderWizHole(); }
+
+function wizHoleBack() {
+  if (wizState.hole > 0) { wizState.hole--; renderWizHole(); }
+}
+
+function wizHoleNext() {
+  if (wizState.hole < wizState.totalHoles - 1) {
+    wizState.hole++;
+    renderWizHole();
+  } else {
+    // Go to review
+    showWizPhase('review');
+    const N = wizState.totalHoles;
+    const cols = N === 9 ? 9 : 9;
+    document.getElementById('wiz-review-grid').style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    document.getElementById('wiz-review-grid').innerHTML = wizState.si.map((si, i) =>
+      `<div style="background:var(--surface2);border-radius:5px;padding:4px 2px;text-align:center;cursor:pointer;" onclick="wizJump(${i});showWizPhase('holes');">
+        <div style="font-size:0.45rem;color:var(--muted);">${i+1}</div>
+        <div style="font-size:0.65rem;font-weight:600;color:${si>0?'var(--green-acc)':'var(--red)'};">${si||'?'}</div>
+        <div style="font-size:0.45rem;color:var(--muted);">p${wizState.par[i]}</div>
+      </div>`
+    ).join('');
+    document.getElementById('wiz-review-par').textContent = wizState.par.reduce((a,b)=>a+b,0);
+  }
+}
+
+async function wizConfirm() {
+  const N = wizState.totalHoles;
+  if (wizState.si.some(v => v === 0)) { notify('Complete all stroke indexes'); return; }
+  const name = (wizState.courseName || document.getElementById('wiz-course-name')?.value || '').trim();
+  if (!name) { notify('Course name required'); return; }
+
+  const courseObj = { name, si: [...wizState.si], par: [...wizState.par], holes: N };
+  const courses = await getCourses();
+
+  if (wizState.editIdx !== undefined) {
+    courses[wizState.editIdx] = courseObj;
+  } else {
+    courses.push(courseObj);
+  }
+
+  const saved = await saveCourses(courses);
+  if (!saved) { notify('Save failed — please try again'); return; }
+
+  document.getElementById('course-wizard-modal').classList.remove('open');
+  notify(`${name} saved ✓`);
+
+  // Always refresh course dropdowns if setup is active
+  if (document.getElementById('setup-tournament').classList.contains('active')) {
+    renderRoundCourses();
+  }
+  // Re-open courses modal so user can select the course they just added
+  if (wizState.targetRoundIdx !== null && wizState.targetRoundIdx !== undefined) {
+    openCoursesModal(wizState.targetRoundIdx);
+  }
+}
+
+function closeWizard() {
+  document.getElementById('course-wizard-modal').classList.remove('open');
+  if (wizState.fromCoursesModal && wizState.targetRoundIdx !== undefined) {
+    openCoursesModal(wizState.targetRoundIdx);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// COURSES MODAL
+// ═══════════════════════════════════════════════════
+let _coursesModalTargetRound = null;
+async function openCoursesModal(targetRoundIdx) {
+  _coursesModalTargetRound = targetRoundIdx;
+  wizState.targetRoundIdx = targetRoundIdx;
+  const courses = await getCourses();
+  let html = '';
+  if (courses.length === 0) html = '<div style="font-size:0.82rem;color:var(--muted);text-align:center;padding:1rem;">No courses saved yet</div>';
+  courses.forEach((c, i) => {
+    html += `<div class="course-list-item" onclick="pickCourseForRound(${i})">
+      <div><div class="cli-name">${c.name}</div><div class="cli-meta">${c.si.length} holes · Par ${c.par.reduce((a,b)=>a+b,0)}</div></div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <button onclick="event.stopPropagation();openWizardEdit(${i})" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.7rem;cursor:pointer;">Edit</button>
+        <button class="cli-del" onclick="event.stopPropagation();deleteCourse(${i})">✕</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('courses-list-items').innerHTML = html;
+  document.getElementById('courses-modal').classList.add('open');
+}
+
+async function pickCourseForRound(courseIdx) {
+  if (_coursesModalTargetRound !== null && _coursesModalTargetRound !== undefined) {
+    const courses = await getCourses();
+    setupState.roundCourses[_coursesModalTargetRound] = { ...courses[courseIdx], holes: courses[courseIdx].si.length };
+    closeCoursesModal();
+    renderRoundCourses();
+  } else {
+    closeCoursesModal();
+  }
+}
+
+async function deleteCourse(idx) {
+  const courses = await getCourses();
+  courses.splice(idx, 1);
+  await saveCourses(courses);
+  openCoursesModal(_coursesModalTargetRound);
+}
+
+function closeCoursesModal() {
+  document.getElementById('courses-modal').classList.remove('open');
+  if (document.getElementById('setup-tournament').classList.contains('active')) renderRoundCourses();
+}
+
+// ═══════════════════════════════════════════════════
+// JOIN TOURNAMENT
+// ═══════════════════════════════════════════════════
+function joinTournament() {
+  document.getElementById('join-code').value = '';
+  document.getElementById('join-name').value = '';
+  document.getElementById('join-modal').classList.add('open');
+}
+
+async function doJoin() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const name = document.getElementById('join-name').value.trim();
+  if (code.length !== 6) { notify('Enter a 6-character code'); return; }
+  if (!name) { notify('Enter your name'); return; }
+
+  const t = await getTournament(code);
+  if (!t) { notify('Tournament not found — check the code'); return; }
+
+  // Save to personal list
+  const myList = localGet('golf_my_tournaments') || [];
+  if (!myList.includes(code)) myList.push(code);
+  localSet('golf_my_tournaments', myList);
+
+  document.getElementById('join-modal').classList.remove('open');
+  openTournament(code);
+}
+
+// ═══════════════════════════════════════════════════
+// SHARE
+// ═══════════════════════════════════════════════════
+function showShareCode() {
+  const id = appState.currentTournamentId;
+  document.getElementById('share-code-display').textContent = id;
+  document.getElementById('share-modal').classList.add('open');
+}
+
+function copyCode() {
+  const code = appState.currentTournamentId;
+  if (navigator.clipboard) navigator.clipboard.writeText(code);
+  notify('Code copied ✓');
+}
+
+// ═══════════════════════════════════════════════════
+// PAST TOURNAMENTS
+// ═══════════════════════════════════════════════════
+async function loadPastTournaments() {
+  showScreen('past-tournaments');
+  const myIds = await getMyTournamentIds();
+  if (myIds.length === 0) {
+    document.getElementById('past-list').innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--muted);">No tournaments yet</div>';
+    return;
+  }
+  let html = '';
+  for (const id of [...myIds].reverse()) {
+    const t = await getTournament(id);
+    if (!t) continue;
+    const statusLabel = t.status === 'complete' ? '🏆 Complete' : '⛳ Active';
+    const leaderPts = calcQuickLeader(t);
+    html += `<div class="round-card ${t.status==='active'?'active-round':'complete-round'}" style="cursor:pointer;" onclick="openTournament('${t.id}')">
+      <div class="rc-num" style="font-size:1.3rem;">⛳</div>
+      <div class="rc-body">
+        <div class="rc-title">${t.name}</div>
+        <div class="rc-sub">${t.rounds.length} rounds · ${t.players.length} players${leaderPts ? ' · Leader: ' + leaderPts : ''}</div>
+      </div>
+      <span class="rc-status ${t.status}">${statusLabel}</span>
+    </div>`;
+  }
+  document.getElementById('past-list').innerHTML = html || '<div style="text-align:center;padding:3rem 1rem;color:var(--muted);">No tournaments found</div>';
+}
+
+function calcQuickLeader(t) {
+  try {
+    const totals = t.players.map((p, pi) => {
+      let pts = 0;
+      t.rounds.forEach((r, ri) => {
+        if (r.status === 'upcoming') return;
+        const gi = t.groups.findIndex(g => g.playerIndices.includes(pi));
+        if (gi < 0) return;
+        const key = `${gi}-${pi}`;
+        const s = r.scores[key]; if (!s) return;
+        const hcp = p.roundHcps[ri] || p.startHcp;
+        const shots = calcShotsPerHole(hcp, r.course.si.slice(0, r.holes));
+        s.forEach((g, h) => { if (g>0) pts += stablefordPoints(g, r.course.par[h], shots[h]); });
+      });
+      return { name: p.name, pts };
+    });
+    totals.sort((a,b)=>b.pts-a.pts);
+    return totals[0] ? `${totals[0].name} (${totals[0].pts}pts)` : null;
+  } catch(e) { return null; }
+}
+
+function exitScoring() {
+  showScreen('tournament-lobby');
+  renderLobby();
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function notify(msg) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+const PRESET_COURSES = [
+  { name: 'East Berkshire Golf Club', holes: 18,
+    par: [4,4,4,4,3,4,4,4,3, 4,5,4,3,4,4,3,4,4],
+    si:  [18,14,4,10,16,8,2,6,12, 1,15,13,5,3,11,17,7,9] },
+  { name: 'Windlesham Golf Club', holes: 18,
+    par: [4,4,4,3,4,3,5,4,5, 4,3,5,4,3,4,4,4,5],
+    si:  [5,7,11,17,1,15,9,13,3, 8,14,6,2,18,10,12,4,16] },
+  { name: 'Sand Martins Golf Club', holes: 18,
+    par: [4,4,4,3,4,4,4,3,4, 4,4,3,4,3,4,5,3,5],
+    si:  [4,18,12,16,2,8,14,10,6, 3,7,15,1,17,11,5,13,9] }
+];
+
+function nukeAllData() {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('golf_')) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+    appState.currentTournamentId = null;
+    localSet('golf_courses', PRESET_COURSES);
+    notify('All data cleared ✓');
+    showScreen('home');
+    initHome();
+  } catch(e) { notify('Error: ' + e.message); }
+}
+
+function showDebug() {
+  const panel = document.getElementById('debug-panel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+  if (panel.style.display !== 'none') {
+    let out = '<div style="color:var(--gold);margin-bottom:8px;font-size:0.75rem;">── localStorage ──</div>';
+    let hasData = false;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('golf_')) continue;
+      hasData = true;
+      const v = localStorage.getItem(k);
+      if (k.startsWith('golf_tournament_')) {
+        try {
+          const t = JSON.parse(v);
+          out += '<div style="margin-bottom:10px;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;">';
+          out += '<span style="color:var(--gold);">' + k + '</span><br>';
+          out += 'Name: ' + t.name + '<br>';
+          out += 'Players (' + t.players.length + '): ' + t.players.map((p,i) => i+':'+p.name+'('+p.startHcp+')').join(', ') + '<br>';
+          out += 'Groups: ' + t.groups.map(g => g.name + '=[' + g.playerIndices.join(',') + ']').join(', ') + '<br>';
+          out += '</div>';
+        } catch(e) { out += k + ': parse error<br>'; }
+      } else {
+        out += '<div style="margin-bottom:6px;"><span style="color:#7dd9a0;">' + k + '</span>: ' + (v||'').substring(0,100) + '</div>';
+      }
+    }
+    if (!hasData) out += '<div style="color:var(--red);">No golf_ keys found in localStorage</div>';
+    panel.innerHTML = out;
+  }
+}
+
+function hardDeleteTournament(id) {
+  try {
+    localStorage.removeItem('golf_tournament_' + id);
+    const myList = localGet('golf_my_tournaments') || [];
+    const newList = myList.filter(function(x) { return x !== id; });
+    localSet('golf_my_tournaments', newList);
+    appState.currentTournamentId = null;
+    notify('Deleted ✓');
+    showScreen('home');
+    initHome();
+  } catch(e) { notify('Error: ' + e.message); }
+}
+
+(async function boot() {
+  try {
+    showScreen('home');
+    const existing = localGet('golf_courses') || [];
+    if (existing.length === 0) localSet('golf_courses', PRESET_COURSES);
+    await initHome();
+  } catch(e) {
+    console.error('Boot error:', e);
+    document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:red;color:white;padding:1rem;font-size:0.8rem;z-index:9999;">Boot error: ' + e.message + '</div>';
+  }
+})();
+</script>
+</body>
+</html>
